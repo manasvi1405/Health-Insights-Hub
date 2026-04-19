@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth, AuthRequest } from "./authMiddleware";
-import { connectMongo, ScanModel } from "./mongo";
+import { connectMongo, ScanModel, UserModel } from "./mongo";
 import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
@@ -12,35 +12,52 @@ function getAI() {
   return new GoogleGenAI({ apiKey, httpOptions: { baseUrl } });
 }
 
-function getScanPrompt(type: string) {
-  if (type === "medicine") {
-    return `You are a medical AI assistant. Analyze this medicine image and provide:
-1. Medicine name and active ingredients
-2. What it is used for (indications)
-3. Common dosage information
-4. Important warnings or side effects
-5. Storage instructions
+function getLanguageInstruction(language: string) {
+  const lang = (language || "English").toLowerCase();
+  if (lang.startsWith("hi")) return "Respond ENTIRELY in simple Hindi (हिन्दी). Use easy everyday words that a common person can understand.";
+  if (lang.startsWith("mr")) return "Respond ENTIRELY in simple Marathi (मराठी). Use easy everyday words that a common person can understand.";
+  if (lang.startsWith("ta")) return "Respond ENTIRELY in simple Tamil (தமிழ்). Use easy everyday words.";
+  if (lang.startsWith("bn")) return "Respond ENTIRELY in simple Bengali (বাংলা). Use easy everyday words.";
+  return "Respond in simple English. Avoid medical jargon. Use plain words anyone can understand.";
+}
 
-Format your response as a clear, helpful summary. Start with "Medicine Analysis:" and use simple language suitable for patients. If you cannot clearly identify the medicine, say so and advise consulting a pharmacist.`;
+function getScanPrompt(type: string, language: string) {
+  const langInstruction = getLanguageInstruction(language);
+
+  if (type === "medicine") {
+    return `You are a helpful health assistant. Analyze this medicine image. ${langInstruction}
+
+Please tell the patient:
+1. What is this medicine called?
+2. What is it used for? (in simple words)
+3. How is it usually taken? (dose and timing)
+4. Any important warnings? (e.g., avoid alcohol, take after food)
+5. How to store it?
+
+Keep your answer short, simple, and friendly. Start with "Medicine:" followed by the name.`;
   }
   if (type === "prescription") {
-    return `You are a medical AI assistant. Analyze this prescription and provide:
-1. Medicines prescribed and their dosages
-2. What each medicine is for
-3. Important instructions (before/after food, frequency)
-4. Duration of treatment
-5. Any special precautions mentioned
+    return `You are a helpful health assistant. Analyze this prescription. ${langInstruction}
 
-Format as "Prescription Analysis:" with a clear, patient-friendly summary. Include a reminder to follow the doctor's instructions exactly.`;
+Please tell the patient:
+1. Which medicines are prescribed and their doses
+2. What each medicine does (in simple words)
+3. When to take each medicine (before/after food, morning/night)
+4. How many days to take them
+5. Any special instructions
+
+Keep it short, clear, and easy to understand. Always remind them to follow their doctor's advice.`;
   }
-  return `You are a medical AI assistant. Analyze this medical report and provide:
-1. Key findings and values
-2. What these results mean in simple language
-3. Values that are outside normal range (highlight if High/Low)
-4. Recommended actions or follow-up
-5. Lifestyle suggestions if applicable
+  return `You are a helpful health assistant. Analyze this medical report. ${langInstruction}
 
-Format as "Report Analysis:" with a clear, patient-friendly summary. Always advise consulting the doctor for medical decisions.`;
+Please tell the patient:
+1. What test was done and what was found
+2. Which values are normal and which are high/low (mark clearly)
+3. What does this mean for their health (in simple words)
+4. What should they do next?
+5. Any lifestyle tips (food, exercise, rest)?
+
+Be simple, caring, and clear. Always say they should show this to their doctor.`;
 }
 
 router.get("/", requireAuth, async (req: AuthRequest, res) => {
@@ -63,6 +80,10 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
     const { type, imageBase64 } = req.body;
     if (!type || !imageBase64) return res.status(400).json({ error: "Type and image required" });
 
+    // Get user language for AI response
+    const userDoc = await UserModel.findById(req.userId).lean() as { language?: string } | null;
+    const language = userDoc?.language || "English";
+
     let aiInsight = "";
     let summary = "";
 
@@ -76,7 +97,7 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
         contents: [{
           role: "user",
           parts: [
-            { text: getScanPrompt(type) },
+            { text: getScanPrompt(type, language) },
             { inlineData: { mimeType, data: base64Data } }
           ]
         }],
@@ -85,11 +106,11 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
 
       aiInsight = response.text || "Analysis complete. Please consult your doctor for medical advice.";
       const lines = aiInsight.split("\n").filter((l: string) => l.trim());
-      summary = lines.slice(0, 3).join(" ").slice(0, 200);
+      summary = lines.slice(0, 2).join(" ").slice(0, 200);
     } catch (aiErr) {
       req.log.error(aiErr, "AI scan error");
-      aiInsight = `${type.charAt(0).toUpperCase() + type.slice(1)} scanned successfully. AI analysis temporarily unavailable. Please consult your healthcare provider for detailed information.`;
-      summary = "Scan complete - please consult your doctor.";
+      aiInsight = `${type.charAt(0).toUpperCase() + type.slice(1)} scanned. AI analysis could not complete. Please consult your healthcare provider for detailed information.`;
+      summary = "Scan complete - consult your doctor.";
     }
 
     const scan = await ScanModel.create({

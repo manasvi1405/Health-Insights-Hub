@@ -1,20 +1,18 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 
 const languages = [
-  { code: "en", name: "English" },
-  { code: "hi", name: "हिन्दी" },
-  { code: "mr", name: "मराठी" },
-  { code: "ta", name: "தமிழ்" },
-  { code: "bn", name: "বাংলা" },
+  { code: "English", native: "English", flag: "🇬🇧" },
+  { code: "Hindi", native: "हिन्दी", flag: "🇮🇳" },
+  { code: "Marathi", native: "मराठी", flag: "🇮🇳" },
+  { code: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
+  { code: "Bengali", native: "বাংলা", flag: "🇮🇳" },
 ];
 
 export default function LanguageSelect() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    // If language is already selected, go to login
     if (localStorage.getItem("sehat_lang")) {
       setLocation("/login");
     }
@@ -26,26 +24,31 @@ export default function LanguageSelect() {
   };
 
   return (
-    <div className="flex flex-col h-full justify-center p-6 space-y-8 animate-in fade-in zoom-in duration-500">
-      <div className="text-center space-y-4">
-        <div className="w-24 h-24 bg-primary/10 rounded-full mx-auto flex items-center justify-center mb-6">
-          <span className="text-4xl font-bold text-primary">S</span>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-white">
+      <div className="w-full max-w-[390px] space-y-8 animate-in fade-in zoom-in duration-500">
+        <div className="text-center space-y-3">
+          <div className="w-24 h-24 bg-primary rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
+            <span className="text-5xl font-bold text-white">S</span>
+          </div>
+          <h1 className="text-4xl font-bold text-slate-900">SehatSaathi</h1>
+          <p className="text-xl text-slate-500">Choose your language / भाषा चुनें</p>
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">Choose Language</h1>
-        <p className="text-lg text-slate-600">Please select your preferred language</p>
-      </div>
 
-      <div className="space-y-4">
-        {languages.map((lang) => (
-          <Button
-            key={lang.code}
-            variant="outline"
-            className="w-full h-16 text-xl justify-between px-6 bg-white hover:bg-primary/5 hover:text-primary hover:border-primary transition-all border-2"
-            onClick={() => selectLanguage(lang.code)}
-          >
-            <span>{lang.name}</span>
-          </Button>
-        ))}
+        <div className="space-y-4">
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              className="w-full h-16 text-xl flex items-center gap-4 px-6 bg-white rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-blue-50 transition-all shadow-sm font-semibold text-slate-800 active:scale-[0.98]"
+              onClick={() => selectLanguage(lang.code)}
+            >
+              <span className="text-2xl">{lang.flag}</span>
+              <span>{lang.native}</span>
+              {lang.code !== lang.native && (
+                <span className="text-slate-400 text-base ml-auto font-normal">{lang.code}</span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
