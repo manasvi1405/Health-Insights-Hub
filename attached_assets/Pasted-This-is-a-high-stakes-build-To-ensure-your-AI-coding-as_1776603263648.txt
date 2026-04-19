@@ -1,0 +1,54 @@
+This is a high-stakes build. To ensure your AI coding assistant (on Replit or elsewhere) doesn't skip the complex logic for the Dynamic Medicine Stock, Multi-time Alarms, and AI-driven Scans, you need a prompt that defines the data relationship between the MongoDB collections and the Web APIs.
+Here is the Master Technical Prompt optimized for a full MERN stack development.
+
+🚀 MERN Master Build: SehatSaathi AI (Dynamic Life-Critical Web)
+Role: Senior Full-Stack Engineer (MERN + AI Integration Specialist)
+Goal: Build a Mobile-First Web App (390px centered) with 100% dynamic data flow using MongoDB and real-world hardware integrations.
+
+🔐 1. AUTH & CONFIG (TWILIO REAL-WORLD)
+Implement a custom Phone OTP system using the following credentials (stored in .env):
+
+Twilio SID: ACcac22770cc0ef6a98d6fdd184cc3f26c
+Auth Token: 8c12bbdc46eca75b1f040dbe4ee1adbf
+Twilio Number: +16067531373
+Workflow: User enters phone \rightarrow Server sends OTP via Twilio SMS \rightarrow User enters OTP \rightarrow JWT issued.
+Hardcoded Bypass (Dev): 8446530525 / 12345.
+🌐 2. DYNAMIC MULTI-LANGUAGE ENGINE (STARTUP)
+Initialization: Before Login, show a high-contrast Language Selection screen.
+Languages: English, Hindi, Marathi, Tamil, Bengali.
+State: Save choice to MongoDB users.language. All UI text, Voice Assistant output, and AI summaries must dynamically switch based on this state.
+💊 3. DYNAMIC MEDICINE & ALARM LOGIC
+Schema Requirements (MongoDB):
+
+Reminders Collection: medName, dosage, frequency (once/twice/thrice), times (Array of ISO strings), stockCount (Number), userId.
+Dynamic Alarm Setup:
+If user selects "Twice", dynamically show two time-picker inputs.
+If user selects "Thrice", show three.
+Stock & Alert Logic:
+When user clicks "Taken" on the Home Screen:
+stockCount decrements by 1 in MongoDB.
+IF stockCount <= 2: Trigger a "Running Low" red alert on UI + Send SMS to primary contact via Twilio.
+IF stockCount == 0: Show "Visit Doctor / Restock Immediately" modal.
+🤖 4. AI SCANNER (VISION & ANALYSIS)
+Utilize high-power AI APIs (Gemini/OpenAI) via the Backend:
+
+Scan Medicine: Use navigator.mediaDevices.getUserMedia. AI must identify the drug name and usage.
+Scan Prescription/Report: OCR to extract key vitals or medicine names.
+Dynamic Summary: Instead of raw text, show a "Smart Summary" (e.g., "This report indicates High Blood Sugar. Please avoid sweets and consult Dr. Sharma").
+🚨 5. SOS & HARDWARE INTEGRATION
+Real-World SOS: On click, use navigator.geolocation \rightarrow Get Google Maps Link \rightarrow Backend loops through MongoDB emergency_contacts \rightarrow Sends Twilio SMS.
+Reminders: Use Web Audio API for a loud 15-second siren + SpeechSynthesis to announce: "[Language Translation]: Time to take [Med Name]".
+🏠 6. UI STRUCTURE (ELDER-FIRST)
+Theme: #1565C0 (Blue) / #FFFFFF (White).
+Global Voice: Floating "Listen" button on every page using window.speechSynthesis.
+Layout: Strictly 390px centered.
+Dashboard:
+Greeting (Dynamic Name).
+"Medicine Due Now" Card (Fetched from MongoDB).
+Quick Scan Buttons (Pill/Report/Prescription).
+Sticky SOS Button.
+🛠️ IMPLEMENTATION INSTRUCTIONS
+Frontend: React (Vite) + Tailwind. Use axios for all API calls.
+Backend: Node/Express. Use mongoose for schema.
+Real-time: Use socket.io or setInterval for the alarm clock to ensure no reminders are missed while the tab is open.
+Ready to begin. Should I start by generating the MongoDB Schema and the Twilio OTP Backend logic?
