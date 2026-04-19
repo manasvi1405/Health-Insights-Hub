@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SehatSaathi AI API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User profile operations
+  - name: reminders
+    description: Medicine reminder operations
+  - name: scans
+    description: AI scanner operations
+  - name: sos
+    description: Emergency SOS operations
+  - name: contacts
+    description: Emergency contacts operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,7 +35,329 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/send-otp:
+    post:
+      operationId: sendOtp
+      tags: [auth]
+      summary: Send OTP to phone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOtpBody"
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      tags: [auth]
+      summary: Verify OTP and login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      operationId: updateMe
+      tags: [users]
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: Get all reminders for user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Create a new reminder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReminderBody"
+      responses:
+        "201":
+          description: Created reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+  /reminders/{id}:
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Delete a reminder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    put:
+      operationId: updateReminder
+      tags: [reminders]
+      summary: Update a reminder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReminderBody"
+      responses:
+        "200":
+          description: Updated reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+  /reminders/{id}/taken:
+    post:
+      operationId: markReminderTaken
+      tags: [reminders]
+      summary: Mark medicine as taken (decrements stock)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated reminder with stock info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReminderTakenResponse"
+
+  /scans:
+    get:
+      operationId: listScans
+      tags: [scans]
+      summary: Get recent scans
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of scans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scan"
+    post:
+      operationId: createScan
+      tags: [scans]
+      summary: Submit image for AI analysis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScanBody"
+      responses:
+        "200":
+          description: Scan result with AI insight
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /sos:
+    post:
+      operationId: triggerSos
+      tags: [sos]
+      summary: Trigger SOS alert
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosBody"
+      responses:
+        "200":
+          description: SOS triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosResponse"
+
+  /contacts:
+    get:
+      operationId: listContacts
+      tags: [contacts]
+      summary: List emergency contacts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Contacts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Add emergency contact
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContactBody"
+      responses:
+        "201":
+          description: Created contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+
+  /contacts/{id}:
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete emergency contact
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /home/summary:
+    get:
+      operationId: getHomeSummary
+      tags: [users]
+      summary: Get home dashboard summary (due meds + recent scans)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Home summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeSummary"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +367,294 @@ components:
       required:
         - status
 
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SendOtpBody:
+      type: object
+      properties:
+        phone:
+          type: string
+      required:
+        - phone
+
+    VerifyOtpBody:
+      type: object
+      properties:
+        phone:
+          type: string
+        otp:
+          type: string
+        name:
+          type: string
+      required:
+        - phone
+        - otp
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        age:
+          type: number
+        language:
+          type: string
+        bloodGroup:
+          type: string
+        address:
+          type: string
+        profileComplete:
+          type: boolean
+      required:
+        - _id
+        - phone
+
+    UpdateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: number
+        language:
+          type: string
+        bloodGroup:
+          type: string
+        address:
+          type: string
+
+    Reminder:
+      type: object
+      properties:
+        _id:
+          type: string
+        medName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+          enum: [once, twice, thrice]
+        times:
+          type: array
+          items:
+            type: string
+        stockCount:
+          type: number
+        autoReminder:
+          type: boolean
+        userId:
+          type: string
+        nextDue:
+          type: string
+      required:
+        - _id
+        - medName
+        - dosage
+        - frequency
+        - times
+        - stockCount
+
+    CreateReminderBody:
+      type: object
+      properties:
+        medName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+          enum: [once, twice, thrice]
+        times:
+          type: array
+          items:
+            type: string
+        stockCount:
+          type: number
+        autoReminder:
+          type: boolean
+      required:
+        - medName
+        - dosage
+        - frequency
+        - times
+        - stockCount
+
+    UpdateReminderBody:
+      type: object
+      properties:
+        medName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        times:
+          type: array
+          items:
+            type: string
+        stockCount:
+          type: number
+        autoReminder:
+          type: boolean
+
+    ReminderTakenResponse:
+      type: object
+      properties:
+        reminder:
+          $ref: "#/components/schemas/Reminder"
+        stockAlert:
+          type: string
+        stockCount:
+          type: number
+      required:
+        - reminder
+        - stockCount
+
+    Scan:
+      type: object
+      properties:
+        _id:
+          type: string
+        type:
+          type: string
+          enum: [medicine, prescription, report]
+        imageBase64:
+          type: string
+        aiInsight:
+          type: string
+        summary:
+          type: string
+        createdAt:
+          type: string
+        userId:
+          type: string
+      required:
+        - _id
+        - type
+        - aiInsight
+        - createdAt
+
+    CreateScanBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [medicine, prescription, report]
+        imageBase64:
+          type: string
+      required:
+        - type
+        - imageBase64
+
+    SosBody:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        message:
+          type: string
+      required:
+        - latitude
+        - longitude
+
+    SosResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        contactsNotified:
+          type: number
+        locationLink:
+          type: string
+      required:
+        - message
+        - contactsNotified
+        - locationLink
+
+    Contact:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        relation:
+          type: string
+        isPrimary:
+          type: boolean
+      required:
+        - _id
+        - name
+        - phone
+
+    CreateContactBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        relation:
+          type: string
+        isPrimary:
+          type: boolean
+      required:
+        - name
+        - phone
+
+    HomeSummary:
+      type: object
+      properties:
+        greeting:
+          type: string
+        dueMedications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reminder"
+        recentScans:
+          type: array
+          items:
+            $ref: "#/components/schemas/Scan"
+        lowStockAlerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reminder"
+      required:
+        - greeting
+        - dueMedications
+        - recentScans
+        - lowStockAlerts
