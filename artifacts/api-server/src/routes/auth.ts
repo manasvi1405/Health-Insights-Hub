@@ -6,7 +6,7 @@ const router = Router();
 const JWT_SECRET = process.env.SESSION_SECRET || "sehat-saathi-secret";
 
 const DEV_PHONE = "8446530525";
-const DEV_OTP = "12345";
+const DEV_OTP = "123456";
 
 router.post("/send-otp", async (req, res) => {
   try {
@@ -14,7 +14,7 @@ router.post("/send-otp", async (req, res) => {
     const { phone } = req.body;
     if (!phone) return res.status(400).json({ error: "Phone is required" });
 
-    const otp = phone === DEV_PHONE ? DEV_OTP : Math.floor(100000 * Math.random()).toString().padStart(5, "0");
+    const otp = phone === DEV_PHONE ? DEV_OTP : String(Math.floor(100000 + Math.random() * 900000));
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     await UserModel.findOneAndUpdate(
@@ -27,7 +27,7 @@ router.post("/send-otp", async (req, res) => {
       req.log.info({ phone }, "OTP generated (Twilio not configured in dev)");
     }
 
-    res.json({ message: phone === DEV_PHONE ? "Dev OTP: 12345" : "OTP sent successfully" });
+    res.json({ message: phone === DEV_PHONE ? `Dev OTP: ${DEV_OTP}` : "OTP sent successfully" });
   } catch (err) {
     req.log.error(err, "send-otp error");
     res.status(500).json({ error: "Failed to send OTP" });
