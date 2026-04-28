@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Choose Language - SehatSaathi</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <main class="center-screen">
+    <div class="brand-block">
+      <div class="logo-circle">S</div>
+      <h1>Choose Language</h1>
+      <p>अपनी भाषा चुनें</p>
+    </div>
+
+    <div class="lang-grid" style="width:100%; max-width:340px;">
+      <button class="lang-btn" data-lang="English">English <span class="native">English</span></button>
+      <button class="lang-btn" data-lang="Hindi">हिन्दी <span class="native">Hindi</span></button>
+      <button class="lang-btn" data-lang="Marathi">मराठी <span class="native">Marathi</span></button>
+      <button class="lang-btn" data-lang="Tamil">தமிழ் <span class="native">Tamil</span></button>
+      <button class="lang-btn" data-lang="Bengali">বাংলা <span class="native">Bengali</span></button>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/layout.js"></script>
+  <script>
+    // Saves chosen language locally and on the server, then goes home
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const lang = btn.dataset.lang;
+        setAppLanguage(lang);
+        if (getToken()) {
+          try { await api.put("/users/me", { language: lang }); } catch {}
+        }
+        window.location.href = getToken() ? "/home.html" : "/index.html";
+      });
+    });
+  </script>
+</body>
+</html>

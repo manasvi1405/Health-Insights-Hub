@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "xsROn-tJMBPN3Ds-JIVL-"
+uri = "file://SehatSaathi/README.md"
+type = "text"
+title = "SehatSaathi - README"
