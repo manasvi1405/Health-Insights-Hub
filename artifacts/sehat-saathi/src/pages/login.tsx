@@ -56,11 +56,6 @@ export default function Login() {
         <p className="text-lg text-slate-600">Your digital health companion</p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
-        <p className="text-sm text-blue-800 font-medium">Dev Test Account:</p>
-        <p className="text-lg text-blue-900 font-bold tracking-wider">8446530525 / 123456</p>
-      </div>
-
       {step === "phone" ? (
         <div className="space-y-6">
           <div className="space-y-3">

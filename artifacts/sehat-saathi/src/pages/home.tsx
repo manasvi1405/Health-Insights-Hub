@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, AlertCircle, Clock, FileText, Camera } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useT } from "@/hooks/use-t";
 
 export default function Home() {
   const { user } = useAuth();
+  const { t } = useT();
   const { data: summary, isLoading } = useGetHomeSummary();
 
   if (isLoading) {
@@ -27,16 +29,16 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
           {summary?.greeting || `Hello, ${user?.name || 'Friend'}!`}
         </h1>
-        <p className="text-lg text-slate-500 mt-1">Here is your daily health summary</p>
+        <p className="text-lg text-slate-500 mt-1">{t("home.summary")}</p>
       </header>
 
       {/* Due Medications */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Clock className="w-6 h-6 text-primary" /> Due Medications
+            <Clock className="w-6 h-6 text-primary" /> {t("home.dueMeds")}
           </h2>
-          <Link href="/reminders" className="text-primary font-semibold">View All</Link>
+          <Link href="/reminders" className="text-primary font-semibold">{t("home.viewAll")}</Link>
         </div>
         
         {summary?.dueMedications && summary.dueMedications.length > 0 ? (
@@ -49,7 +51,7 @@ export default function Home() {
                     <p className="text-slate-600">{med.dosage} • {med.frequency}</p>
                   </div>
                   <Link href="/reminders">
-                    <div className="bg-primary text-white px-4 py-2 rounded-lg font-bold">Take</div>
+                    <div className="bg-primary text-white px-4 py-2 rounded-lg font-bold">{t("home.take")}</div>
                   </Link>
                 </CardContent>
               </Card>
@@ -59,7 +61,7 @@ export default function Home() {
           <Card className="bg-slate-50 border-dashed border-2">
             <CardContent className="p-6 text-center text-slate-500">
               <Bell className="w-10 h-10 mx-auto text-slate-400 mb-2" />
-              <p className="text-lg">No medications due right now.</p>
+              <p className="text-lg">{t("home.noMeds")}</p>
             </CardContent>
           </Card>
         )}
@@ -69,7 +71,7 @@ export default function Home() {
       {summary?.lowStockAlerts && summary.lowStockAlerts.length > 0 && (
         <section>
           <h2 className="text-xl font-bold text-destructive flex items-center gap-2 mb-4">
-            <AlertCircle className="w-6 h-6" /> Low Stock Alerts
+            <AlertCircle className="w-6 h-6" /> {t("home.lowStock")}
           </h2>
           <div className="space-y-3">
             {summary.lowStockAlerts.map(med => (
@@ -90,7 +92,7 @@ export default function Home() {
       {/* Recent Scans */}
       <section>
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
-          <Camera className="w-6 h-6 text-primary" /> Recent Scans
+          <Camera className="w-6 h-6 text-primary" /> {t("home.recentScans")}
         </h2>
         {summary?.recentScans && summary.recentScans.length > 0 ? (
           <div className="space-y-3">
@@ -114,9 +116,9 @@ export default function Home() {
         ) : (
           <Card className="bg-slate-50 border-dashed border-2">
             <CardContent className="p-6 text-center text-slate-500">
-              <p className="text-lg">No recent scans.</p>
+              <p className="text-lg">{t("home.noScans")}</p>
               <Link href="/scan">
-                <div className="mt-4 text-primary font-bold">Scan Document</div>
+                <div className="mt-4 text-primary font-bold">{t("scan.title")}</div>
               </Link>
             </CardContent>
           </Card>

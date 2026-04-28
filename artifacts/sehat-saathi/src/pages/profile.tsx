@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpdateMe, useListContacts, useCreateContact, useDeleteContact, getGetMeQueryKey, getListContactsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { setAppLanguage } from "@/hooks/use-t";
 
 const LANGUAGES = [
   { value: "English", label: "English" },
@@ -67,7 +68,7 @@ export default function Profile() {
         }
       });
       // Update localStorage language too so app language changes immediately
-      localStorage.setItem("sehat_lang", formData.language);
+      setAppLanguage(formData.language);
       queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
       setIsEditing(false);
       toast({ title: "Profile updated!", description: "Your changes have been saved." });

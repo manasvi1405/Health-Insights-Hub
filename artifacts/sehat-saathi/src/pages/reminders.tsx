@@ -12,8 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useListReminders, useCreateReminder, useMarkReminderTaken, useDeleteReminder, getListRemindersQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useT } from "@/hooks/use-t";
 
 export default function Reminders() {
+  const { t } = useT();
   const [showAddForm, setShowAddForm] = useState(false);
   const [location] = useLocation();
   const queryClient = useQueryClient();
@@ -218,13 +220,13 @@ export default function Reminders() {
     <div className="space-y-5 pt-2 pb-24 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Reminders</h1>
-          <p className="text-slate-500 text-base mt-1">{reminders?.length || 0} medicine{reminders?.length !== 1 ? "s" : ""} tracked</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t("rem.title")}</h1>
+          <p className="text-slate-500 text-base mt-1">{reminders?.length || 0} {t("rem.tracked")}</p>
         </div>
       </div>
 
       <Button className="w-full h-16 text-xl rounded-xl gap-3 shadow-sm" onClick={() => setShowAddForm(true)}>
-        <Plus className="w-6 h-6" /> Add New Medicine
+        <Plus className="w-6 h-6" /> {t("rem.addNew")}
       </Button>
 
       {reminders && reminders.length > 0 ? (
@@ -286,7 +288,7 @@ export default function Reminders() {
                       disabled={markTakenMutation.isPending || isOutOfStock}
                     >
                       <CheckCircle className="w-5 h-5" />
-                      {isOutOfStock ? "Restocked?" : "Take Now"}
+                      {isOutOfStock ? "Restocked?" : t("rem.takeNow")}
                     </Button>
                   </div>
 
@@ -303,7 +305,7 @@ export default function Reminders() {
       ) : (
         <div className="text-center py-16 px-4 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
           <Pill className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-700">No medicines added yet</h3>
+          <h3 className="text-xl font-bold text-slate-700">{t("rem.empty")}</h3>
           <p className="text-slate-500 mt-2 text-base">Tap the button above to add your medicines and get timely reminders.</p>
         </div>
       )}

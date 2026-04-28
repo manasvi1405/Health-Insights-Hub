@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { setAppLanguage } from "@/hooks/use-t";
 
 const languages = [
   { code: "English", native: "English", flag: "🇬🇧" },
@@ -19,7 +20,7 @@ export default function LanguageSelect() {
   }, [setLocation]);
 
   const selectLanguage = (code: string) => {
-    localStorage.setItem("sehat_lang", code);
+    setAppLanguage(code);
     setLocation("/login");
   };
 
