@@ -92,25 +92,36 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
       const base64Data = imageBase64.includes(",") ? imageBase64.split(",")[1] : imageBase64;
       const mimeType = imageBase64.startsWith("data:image/png") ? "image/png" : "image/jpeg";
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{
-          role: "user",
-          parts: [
-            { text: getScanPrompt(type, language) },
-            { inlineData: { mimeType, data: base64Data } }
-          ]
-        }],
-        config: { maxOutputTokens: 8192 }
-      });
-
-      aiInsight = response.text || "Analysis complete. Please consult your doctor for medical advice.";
+      const modelsToTry = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.5-pro"];
+      let lastErr: any = null;
+      for (const model of modelsToTry) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: [{
+              role: "user",
+              parts: [
+                { text: getScanPrompt(type, language) },
+                { inlineData: { mimeType, data: base64Data } }
+              ]
+            }],
+            config: { maxOutputTokens: 8192 }
+          });
+          aiInsight = response.text || "";
+          if (aiInsight) break;
+        } catch (e) {
+          lastErr = e;
+          req.log.warn({ model, err: String(e) }, "Gemini model failed, trying next");
+        }
+      }
+      if (!aiInsight) throw lastErr || new Error("All Gemini models failed");
       const lines = aiInsight.split("\n").filter((l: string) => l.trim());
       summary = lines.slice(0, 2).join(" ").slice(0, 200);
-    } catch (aiErr) {
+    } catch (aiErr: any) {
       req.log.error(aiErr, "AI scan error");
-      aiInsight = `${type.charAt(0).toUpperCase() + type.slice(1)} scanned. AI analysis could not complete. Please consult your healthcare provider for detailed information.`;
-      summary = "Scan complete - consult your doctor.";
+      const errMsg = aiErr?.message || String(aiErr);
+      aiInsight = `${type.charAt(0).toUpperCase() + type.slice(1)} scanned, but AI analysis is temporarily unavailable. Please try again in a moment, or consult your healthcare provider.\n\n(Technical detail: ${errMsg.slice(0, 200)})`;
+      summary = "Scan complete - AI analysis unavailable.";
     }
 
     const scan = await ScanModel.create({
